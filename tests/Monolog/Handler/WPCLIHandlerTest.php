@@ -67,7 +67,7 @@ class WPCLIHandlerTest extends TestCase
      */
     private static function getHandleObjectForStandardTest()
     {
-        return new WPCLIHandler();
+        return new WPCLIHandler(Logger::DEBUG);
     }
 
     /**
@@ -128,7 +128,7 @@ class WPCLIHandlerTest extends TestCase
     //</editor-fold>
 
 
-    //<editor-fold desc="General Tests">
+    //<editor-fold desc="Main Logger Method Tests">
 
     /**
      * Tests the handler can actually be added to a Logger ok.
@@ -139,12 +139,15 @@ class WPCLIHandlerTest extends TestCase
 
         $this->pretendToBeInWPCLI();
         $logger = self::getLoggerObjectForStandardTest();
-        $logger->pushHandler($var = self::getHandleObjectForStandardTest());
+        $logger->pushHandler(self::getHandleObjectForStandardTest());
 
         unset($logger);
         $this->assertTrue(true);
     }
 
+    //</editor-fold>
+
+    //<editor-fold desc="IsHandling Tests">
     /**
      * Tests isHandling of WPCLIHandler returns false for an unsupported logging level.
      *
@@ -285,7 +288,7 @@ class WPCLIHandlerTest extends TestCase
 
         $this->pretendToBeInWPCLI();
         $logger = self::getLoggerObjectForStandardTest();
-        $logger->pushHandler($var = self::getHandleObjectForStandardTest());
+        $logger->pushHandler(self::getHandleObjectForStandardTest());
 
         $logger->debug('This is the end...');
 
@@ -304,7 +307,7 @@ class WPCLIHandlerTest extends TestCase
 
         $this->pretendToBeInWPCLI();
         $logger = self::getLoggerObjectForStandardTest();
-        $logger->pushHandler($var = self::getHandleObjectForStandardTest());
+        $logger->pushHandler(self::getHandleObjectForStandardTest());
 
         $logger->info('This is the end...');
 
@@ -323,7 +326,7 @@ class WPCLIHandlerTest extends TestCase
 
         $this->pretendToBeInWPCLI();
         $logger = self::getLoggerObjectForStandardTest();
-        $logger->pushHandler($var = self::getHandleObjectForStandardTest());
+        $logger->pushHandler(self::getHandleObjectForStandardTest());
 
         $logger->notice('This is the end...');
 
@@ -342,7 +345,7 @@ class WPCLIHandlerTest extends TestCase
 
         $this->pretendToBeInWPCLI();
         $logger = self::getLoggerObjectForStandardTest();
-        $logger->pushHandler($var = self::getHandleObjectForStandardTest());
+        $logger->pushHandler(self::getHandleObjectForStandardTest());
 
         $logger->warning('This is the end...');
 
@@ -361,7 +364,7 @@ class WPCLIHandlerTest extends TestCase
 
         $this->pretendToBeInWPCLI();
         $logger = self::getLoggerObjectForStandardTest();
-        $logger->pushHandler($var = self::getHandleObjectForStandardTest());
+        $logger->pushHandler(self::getHandleObjectForStandardTest());
 
         $logger->error('This is the end...');
 
@@ -380,7 +383,7 @@ class WPCLIHandlerTest extends TestCase
 
         $this->pretendToBeInWPCLI();
         $logger = self::getLoggerObjectForStandardTest();
-        $logger->pushHandler($var = self::getHandleObjectForStandardTest());
+        $logger->pushHandler(self::getHandleObjectForStandardTest());
 
         $this->expectException('ExitException');
         $logger->critical('This is the end...');
@@ -400,7 +403,7 @@ class WPCLIHandlerTest extends TestCase
 
         $this->pretendToBeInWPCLI();
         $logger = self::getLoggerObjectForStandardTest();
-        $logger->pushHandler($var = self::getHandleObjectForStandardTest());
+        $logger->pushHandler(self::getHandleObjectForStandardTest());
 
         $this->expectException('ExitException');
         $logger->alert('This is the end...');
@@ -420,7 +423,7 @@ class WPCLIHandlerTest extends TestCase
 
         $this->pretendToBeInWPCLI();
         $logger = self::getLoggerObjectForStandardTest();
-        $logger->pushHandler($var = self::getHandleObjectForStandardTest());
+        $logger->pushHandler(self::getHandleObjectForStandardTest());
 
         $this->expectException('ExitException');
         $logger->emergency('This is the end...');

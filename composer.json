@@ -1,6 +1,6 @@
 {
   "name": "mhcg/monolog-wp-cli",
-  "description": "Monolog handler to support WP::CLI calls",
+  "description": "Monolog handler to support WP-CLI calls",
   "keywords": [
     "log",
     "logging",
