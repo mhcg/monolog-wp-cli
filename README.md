@@ -105,7 +105,7 @@ Success: Finished running mycommand
 ```
 
 ```shell
-wp mycommand --quiet
+$ wp mycommand --quiet
 Error: (ERROR) An error has occured
 ```
 
