@@ -13,4 +13,9 @@ cache:
 before_script:
   - composer install --prefer-source --no-interaction --dev
 
-script: composer tests
+script:
+  - mkdir -p build/logs
+  - composer coverage
+
+after_success:
+  - travis_retry php vendor/bin/php-coveralls
