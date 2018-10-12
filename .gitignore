@@ -1,4 +1,4 @@
 composer.phar
 /vendor/
-/coverage/
+/build/
 *.cache
