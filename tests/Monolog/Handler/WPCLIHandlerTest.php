@@ -125,6 +125,49 @@ class WPCLIHandlerTest extends TestCase
         unset($var);
     }
 
+    /**
+     * @covers \MHCG\Monolog\Handler\WPCLIHandler::__construct
+     */
+    public function testConstructorInWPCLIVerbose()
+    {
+        $this->sanityCheck();
+
+        $this->pretendToBeInWPCLI();
+        $var = new WPCLIHandler(Logger::DEBUG, true, true);
+        $this->assertTrue(is_object($var));
+        $this->isInstanceOf('\MHCG\Monolog\Handler\WPCLIHandler');
+        unset($var);
+    }
+
+    /**
+     * Tests the formatter is different between standard and verbose
+     *
+     * @covers \MHCG\Monolog\Handler\WPCLIHandler::getFormatter
+     */
+    public function testFormatterDifferent()
+    {
+        $this->sanityCheck();
+
+        $this->pretendToBeInWPCLI();
+        $standard = new WPCLIHandler(Logger::DEBUG, true, false);
+        $verbose = new WPCLIHandler(Logger::DEBUG, true, true);
+        $testRecord = array(
+            'message' => 'This is a message',
+            'context' => array('whatever' => 'something'),
+            'extra' => array('whatever2' => 'someting else')
+        );
+
+        $testStandard = $standard->getFormatter()->format($testRecord);
+        $testVerbose = $verbose->getFormatter()->format($testRecord);
+
+        // test there is something in both
+        $this->assertTrue(strlen($testStandard) > 1);
+        $this->assertTrue(strlen($testVerbose) > 1);
+
+        // then test they are different (which they should be)
+        $this->assertNotEquals($testStandard, $testVerbose);
+    }
+
     //</editor-fold>
 
 
