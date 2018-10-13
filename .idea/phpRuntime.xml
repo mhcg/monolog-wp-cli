@@ -12,7 +12,7 @@
       <extension name="apc" enabled="false" />
       <extension name="apcu" enabled="false" />
       <extension name="bz2" enabled="false" />
-      <extension name="com" enabled="false" />
+      <extension name="com_dotnet" enabled="false" />
       <extension name="couchbase" enabled="false" />
       <extension name="cubrid" enabled="false" />
       <extension name="dba" enabled="false" />

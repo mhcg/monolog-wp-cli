@@ -25,7 +25,9 @@
     "jakub-onderka/php-parallel-lint": "^0.9",
     "squizlabs/php_codesniffer": "^3.3",
     "friendsofphp/php-cs-fixer": "^2.13",
-    "php-coveralls/php-coveralls": "^2.1"
+    "php-coveralls/php-coveralls": "^2.1",
+    "wp-cli/wp-cli": "^2.0",
+    "phpmd/phpmd": "^2.6"
   },
   "autoload": {
     "psr-4": {
