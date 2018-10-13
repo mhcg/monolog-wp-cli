@@ -1,8 +1,10 @@
 # Monolog WP-CLI Handler
 
 [![Latest Stable Version](https://img.shields.io/packagist/v/mhcg/monolog-wp-cli.svg)](https://packagist.org/packages/mhcg/monolog-wp-cli)
+
 [![Build Status](https://img.shields.io/travis/com/mhcg/monolog-wp-cli.svg)](https://travis-ci.com/mhcg/monolog-wp-cli)
 [![Coveralls github](https://img.shields.io/coveralls/github/mhcg/monolog-wp-cli.svg)](https://coveralls.io/github/mhcg/monolog-wp-cli)
+[![Code Climate](https://img.shields.io/codeclimate/maintainability/mhcg/monolog-wp-cli.svg)](https://codeclimate.com/github/mhcg/monolog-wp-cli)
 
 Handler for [Monolog](https://github.com/Seldaek/monolog) to support outputting to WP-CLI when running wp command lines.
 
