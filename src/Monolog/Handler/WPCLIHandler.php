@@ -22,7 +22,6 @@ use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
 use WP_CLI;
-use WP_CLI\ExitException;
 
 /**
  * Handler for Monolog that uses WP-CLI methods to for logging.
@@ -96,7 +95,7 @@ class WPCLIHandler extends AbstractProcessingHandler
      *
      * @return void
      * @throws \RuntimeException If a level is passed that is not currently mapped to a WP_CLI:: method.
-     * @throws ExitException Thrown by WP_CLI::error() method when critical.
+     * @throws \InvalidArgumentException if something in $record is invalid.
      */
     protected function write(array $record)
     {
@@ -105,37 +104,108 @@ class WPCLIHandler extends AbstractProcessingHandler
         $levelName = (string)$record['level_name'] ?: '';
         $formattedMessage = $this->getFormatter()->format($record);
 
-        switch ($level) {
-            case Logger::DEBUG:
-                WP_CLI::debug($formattedMessage);
-                break;
-            case Logger::INFO:
-                WP_CLI::log($formattedMessage);
-                break;
-            case Logger::NOTICE:
-                WP_CLI::warning('(' . $levelName . ') ' . $formattedMessage);
-                break;
-            case Logger::WARNING:
-                WP_CLI::warning('(' . $levelName . ') ' . $formattedMessage);
-                break;
-            case Logger::ERROR:
-                WP_CLI::error('(' . $levelName . ') ' . $formattedMessage, false);
-                break;
-            case Logger::CRITICAL:
-                WP_CLI::error('(' . $levelName . ') ' . $formattedMessage, true);
-                break;
-            case Logger::ALERT:
-                WP_CLI::error('(' . $levelName . ') ' . $formattedMessage, true);
-                break;
-            case Logger::EMERGENCY:
-                WP_CLI::error('(' . $levelName . ') ' . $formattedMessage, true);
-                break;
-            default:
-                throw new \RuntimeException(
-                    'NotImplementedException: Unsupported level: ' . $levelName . '(' . $level . ')'
-                );
-                break;
+        // build up details of calling method
+        $loggerMap = self::getDefaultLoggerMap();
+        self::validateLoggerMap($loggerMap, $level, $levelName);
+
+        $method = $loggerMap[$level]['method'];
+        $includeLevelName = isset($loggerMap[$level]['includeLevelName'])
+            ? (bool)$loggerMap[$level]['includeLevelName'] : false;
+        $exit = isset($loggerMap[$level]['exit']) ? (bool)$loggerMap[$level]['exit'] : false;
+
+        if ($includeLevelName) {
+            $logMessage = '(' . $levelName . ') ' . $formattedMessage;
+        } else {
+            $logMessage = $formattedMessage;
         }
+
+        // call it
+        if ($method != 'error') {
+            WP_CLI::$method($logMessage);
+        } else {
+            WP_CLI::$method($logMessage, $exit);
+        }
+    }
+
+    /**
+     * Sanity check a logger map.
+     *
+     * Checks to make sure the logger map contains a supported log level and has an existing method in WP_CLI.
+     *
+     * @param array $map The logger map to be checked.
+     * @param int $level The level to be checked.
+     * @param string $levelName The name of the level for error reporting.
+     *
+     * @throws \InvalidArgumentException
+     */
+    public static function validateLoggerMap(array $map, int $level, string $levelName = '')
+    {
+        $entry = isset($map[(string)$level]) ? $map[(string)$level] : array();
+        if (empty($entry)) {
+            throw new \InvalidArgumentException(
+                'Logger map has no entry for level ' . $levelName . '(' . $level . ')'
+            );
+        } else {
+            if (!method_exists('WP_CLI', $entry['method'])) {
+                throw new \InvalidArgumentException(
+                    'Logger map contains an invalid method for level ' . $levelName . '(' . $level . ')'
+                );
+            } else {
+                if (isset($entry['exit'])) {
+                    if ($entry['method'] !== 'error' && $entry['exit'] === true) {
+                        throw new \InvalidArgumentException(
+                            'Logger map for level ' . $levelName . '(' . $level . ') specifies exit but
+                         exit is only valid for \'error\' method'
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /***
+     * Returns an array of default mappings to map Logger methods to WP-CLI methods.
+     *
+     * @return array
+     */
+    public static function getDefaultLoggerMap()
+    {
+        return [
+            Logger::DEBUG => [
+                'method' => 'debug',
+            ],
+            Logger::INFO => [
+                'method' => 'log',
+            ],
+            Logger::NOTICE => [
+                'method' => 'warning',
+                'includeLevelName' => true,
+            ],
+            Logger::WARNING => [
+                'method' => 'warning',
+                'includeLevelName' => true,
+            ],
+            Logger::ERROR => [
+                'method' => 'error',
+                'includeLevelName' => true,
+                'exit' => false,
+            ],
+            Logger::CRITICAL => [
+                'method' => 'error',
+                'includeLevelName' => true,
+                'exit' => true,
+            ],
+            Logger::ALERT => [
+                'method' => 'error',
+                'includeLevelName' => true,
+                'exit' => true,
+            ],
+            Logger::EMERGENCY => [
+                'method' => 'error',
+                'includeLevelName' => true,
+                'exit' => true,
+            ]
+        ];
     }
 
     /**

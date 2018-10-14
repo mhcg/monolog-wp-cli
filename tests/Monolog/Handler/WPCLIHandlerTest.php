@@ -170,6 +170,110 @@ class WPCLIHandlerTest extends TestCase
 
     //</editor-fold>
 
+    //<editor-fold desc="Logger Map Tests">
+    /**
+     * Tests the default logger map contains all the Logger supported levels.
+     *
+     * @covers \MHCG\Monolog\Handler\WPCLIHandler::getDefaultLoggerMap
+     */
+    public function testDefaultMap()
+    {
+
+        // totally round the houses this but Logger doesn't currently return a set of all the level constants
+        $supportedNames = Logger::getLevels();
+        $loggerLevels = [];
+        foreach ($supportedNames as $levelName) {
+            $loggerLevels[] = Logger::toMonologLevel($levelName);
+        }
+        $loggerMap = WPCLIHandler::getDefaultLoggerMap();
+        $difference = array_diff($loggerLevels, array_keys($loggerMap));
+        $this->assertCount(
+            0,
+            $difference,
+            'Default logger map is missed some Logger supported levels'
+        );
+    }
+
+    /**
+     * Validates the default -- ours at least should be valid right?
+     *
+     * @covers \MHCG\Monolog\Handler\WPCLIHandler::validateLoggerMap
+     */
+    public function testValidateLoggerMapDefaultMap()
+    {
+        $defaultMap = WPCLIHandler::getDefaultLoggerMap();
+        foreach ($defaultMap as $level => $mapping) {
+            $this->assertTrue(count($mapping) > 0);
+            $levelName = Logger::getLevelName($level);
+            // this shouldn't throw an exception
+            WPCLIHandler::validateLoggerMap($defaultMap, $level, $levelName);
+            $this->assertTrue(true);
+        }
+    }
+
+    /**
+     * @covers \MHCG\Monolog\Handler\WPCLIHandler::validateLoggerMap
+     */
+    public function testValidateLoggerMapInvalidLevel()
+    {
+        $defaultMap = WPCLIHandler::getDefaultLoggerMap();
+        $this->expectExceptionMessageRegExp('/has no entry for level/');
+        WPCLIHandler::validateLoggerMap($defaultMap, 999999, 'Whatever');
+    }
+
+    /**
+     * @covers \MHCG\Monolog\Handler\WPCLIHandler::validateLoggerMap
+     */
+    public function testValidateLoggerMapInvalidMethod()
+    {
+        $map = [
+            999999 => [
+                'method' => 'method_does_not_exist'
+            ]
+        ];
+        $this->expectExceptionMessageRegExp('/invalid method/');
+        WPCLIHandler::validateLoggerMap($map, 999999, 'Whatever');
+    }
+
+    /**
+     * @covers \MHCG\Monolog\Handler\WPCLIHandler::validateLoggerMap
+     */
+    public function testValidateLoggerMapInvalidUseOfExit()
+    {
+        $map = [
+            Logger::DEBUG => [
+                'method' => 'debug',
+                'exit' => true
+            ]
+        ];
+        $this->expectExceptionMessageRegExp('/specifies exit/');
+        WPCLIHandler::validateLoggerMap(
+            $map,
+            Logger::DEBUG,
+            Logger::getLevelName(Logger::DEBUG)
+        );
+    }
+
+    /**
+     * @covers \MHCG\Monolog\Handler\WPCLIHandler::validateLoggerMap
+     */
+    public function testValidateLoggerMapValidUseOfExit()
+    {
+        $map = [
+            Logger::DEBUG => [
+                'method' => 'error',
+                'exit' => true
+            ]
+        ];
+        // shouldn't throw an exception
+        WPCLIHandler::validateLoggerMap(
+            $map,
+            Logger::DEBUG,
+            Logger::getLevelName(Logger::DEBUG)
+        );
+        $this->assertTrue(true);
+    }
+    //</editor-fold>
 
     //<editor-fold desc="Main Logger Method Tests">
 
