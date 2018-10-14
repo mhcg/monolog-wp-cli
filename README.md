@@ -24,11 +24,11 @@ Monolog WP-CLI Handler works the same as any other handler, so create a new WPCL
 <?php
 
 use Monolog\Logger;
-use MHCG\Monolog\Handler;
+use MHCG\Monolog\Handler\WPCLIHandler;
 
 // create a log channel
 $log = new Logger('name');
-$log->pushHandler(new Handler\WPCLIHandler(Logger::WARNING));
+$log->pushHandler(new WPCLIHandler(Logger::WARNING));
 
 // output to WP-CLI
 $log->warning('This is a warning');
@@ -57,45 +57,44 @@ composer require mhcg/monolog-wp-cli
 //my-plugin.php
 
 use Monolog\Logger;
-use MHCG\Monolog\Handler;
+use MHCG\Monolog\Handler\WPCLIHandler;
 
 // If this file is called directly, abort.
 if ( ! defined( 'ABSPATH' ) ) {
-	die;
+    die;
 }
 
 // Autoload
 $autoload = dirname( __FILE__ ) . '/vendor/autoload.php';
 if ( file_exists( $autoload ) ) {
-	require_once $autoload;
+    require_once $autoload;
 }
 
 // 'mycommand' WP-CLI command
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
 
-	function mycommand_command( $args ) {
-		// create logger
-		$log = new Logger( 'name' );
-		$log->pushHandler( new Handler\WPCLIHandler( Logger::INFO ) );
+    function mycommand_command( $args ) {
+        // create logger
+        $log = new Logger( 'name' );
+        $log->pushHandler( new WPCLIHandler( Logger::INFO ) );
 
-		// debug -- will only show when wp is run with --debug
-		$log->debug( 'Some geeky stuff');
+        // debug -- will only show when wp is run with --debug
+        $log->debug( 'Some geeky stuff');
 
-		// the following won't show when wp is run with --quiet
-		$log->info( ' Started running' );
-		$log->warning( 'Something happened of note' );
+        // the following won't show when wp is run with --quiet
+        $log->info( ' Started running' );
+        $log->warning( 'Something happened of note' );
 
-		// always shows even with --quiet
-		$log->error( 'An error has occurred' );
+        // always shows even with --quiet
+        $log->error( 'An error has occurred' );
 
-		// all done - no real equivalent in Logger of WP_CLI::success
-		WP_CLI::success( 'Finished running mycommand' );
-	}
+        // all done - no real equivalent in Logger of WP_CLI::success
+        WP_CLI::success( 'Finished running mycommand' );
+    }
 
-	WP_CLI::add_command( 'mycommand', 'mycommand_command' );
+    WP_CLI::add_command( 'mycommand', 'mycommand_command' );
 
 }
-
 ```
 
 ```shell

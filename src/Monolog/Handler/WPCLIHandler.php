@@ -19,9 +19,9 @@
 namespace MHCG\Monolog\Handler;
 
 use Monolog\Formatter\LineFormatter;
-use Monolog\Logger;
 use Monolog\Handler\AbstractProcessingHandler;
-use phpDocumentor\Reflection\Types\Boolean;
+use Monolog\Logger;
+use WP_CLI;
 
 /**
  * Handler for Monolog that uses WP-CLI methods to for logging.
@@ -31,9 +31,9 @@ use phpDocumentor\Reflection\Types\Boolean;
 class WPCLIHandler extends AbstractProcessingHandler
 {
     /** @var string Format used when WP_DEBUG disabled */
-    const WPCLI_FORMAT_STANDARD = "%message%";
+    const WP_CLI_FORMAT_STANDARD = "%message%";
     /** @var string Format used when WP_DEBUG enabled */
-    const WPCLI_FORMAT_VERBOSE = "%message% %context% %extra%";
+    const WP_CLI_FORMAT_VERBOSE = "%message% %context% %extra%";
 
     private $verbose = false;
 
@@ -41,20 +41,49 @@ class WPCLIHandler extends AbstractProcessingHandler
      * WPCLIHandler constructor.
      *
      * @param int $level The minimum logging level at which this handler will be triggered
-     * @param Boolean $bubble Whether the messages that are handled can bubble up the stack or not
-     * @param Boolean $verbose Will use this or WP_DEBUG to include extra information in logging messages
+     * @param bool $bubble Whether the messages that are handled can bubble up the stack or not
+     * @param bool $verbose Will use this or WP_DEBUG to include extra information in logging messages
      */
     public function __construct($level = Logger::WARNING, $bubble = true, $verbose = false)
     {
-        $isInWPCLI = (defined('WP_CLI') && WP_CLI);
-        if (! $isInWPCLI) {
+        $isInCLI = (defined('WP_CLI') && WP_CLI);
+        if (!$isInCLI) {
             throw new \RuntimeException('');
         }
 
         parent::__construct($level, $bubble);
 
-        $wp_debug_or_verbose = (defined('WP_DEBUG') ? WP_DEBUG : false) || $verbose;
-        $this->verbose = $wp_debug_or_verbose;
+        $verbose = (defined('WP_DEBUG') ? WP_DEBUG : false) || $verbose;
+        $this->verbose = $verbose;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isHandling(array $record)
+    {
+        // bodge for debug level as needs to always call that;
+        // WP_CLI deals with --debug command argument
+        $level = (int)$record['level'];
+        if ($level == Logger::DEBUG) {
+            return true;
+        }
+
+        // check level is one we know how to handle as more could be added in the future
+        // that would need mapping to the WP-CLI:: method.
+        $supported = array(
+            Logger::DEBUG,
+            Logger::INFO,
+            Logger::NOTICE,
+            Logger::WARNING,
+            Logger::ERROR,
+            Logger::CRITICAL,
+            Logger::ALERT,
+            Logger::EMERGENCY
+        );
+        $isSupported = in_array($level, $supported, true);
+
+        return $isSupported && parent::isHandling($record);
     }
 
     /**
@@ -66,82 +95,117 @@ class WPCLIHandler extends AbstractProcessingHandler
      *
      * @return void
      * @throws \RuntimeException If a level is passed that is not currently mapped to a WP_CLI:: method.
-     * @throws \ExitException Thrown by WP_CLI::error() method when critical.
+     * @throws \InvalidArgumentException if something in $record is invalid.
      */
     protected function write(array $record)
     {
         // init vars for whatever being used
-        //$message = (string)$record['message'] ?: '';
-        $level      = (int) $record['level']; // no default as think it would be an error to be empty
-        $level_name = (string) $record['level_name'] ?: '';
-        //$context = (array)$record['context'] ?: array();
-        //$channel = (string)$record['channel'] ?: ''; // don't think this can be empty either really
-        //$datetime = (object)$record['datetime']; // no default as think it would be an error to be empty
-        //$extra = (array)$record['extra'] ?: array();
+        $level = (int)$record['level']; // no default as think it would be an error to be empty
+        $levelName = (string)$record['level_name'] ?: '';
+        $formattedMessage = $this->getFormatter()->format($record);
 
-        // formatted message
-        $formatted = $this->getFormatter()->format($record);
+        // build up details of calling method
+        $loggerMap = self::getDefaultLoggerMap();
+        self::validateLoggerMap($loggerMap, $level, $levelName);
 
-        switch ($level) {
-            case Logger::DEBUG:
-                \WP_CLI::debug($formatted);
-                break;
-            case Logger::INFO:
-                \WP_CLI::log($formatted);
-                break;
-            case Logger::NOTICE:
-                \WP_CLI::warning('(' . $level_name . ') ' . $formatted);
-                break;
-            case Logger::WARNING:
-                \WP_CLI::warning('(' . $level_name . ') ' . $formatted);
-                break;
-            case Logger::ERROR:
-                \WP_CLI::error('(' . $level_name . ') ' . $formatted, false);
-                break;
-            case Logger::CRITICAL:
-                \WP_CLI::error('(' . $level_name . ') ' . $formatted, true);
-                break;
-            case Logger::ALERT:
-                \WP_CLI::error('(' . $level_name . ') ' . $formatted, true);
-                break;
-            case Logger::EMERGENCY:
-                \WP_CLI::error('(' . $level_name . ') ' . $formatted, true);
-                break;
-            default:
-                throw new \RuntimeException(
-                    'NotImplementedException: Unsupported level: ' . $level_name . '(' . $level . ')'
-                );
-                break;
+        $method = $loggerMap[$level]['method'];
+        $includeLevelName = isset($loggerMap[$level]['includeLevelName'])
+            ? (bool)$loggerMap[$level]['includeLevelName'] : false;
+        $exit = isset($loggerMap[$level]['exit']) ? (bool)$loggerMap[$level]['exit'] : false;
+
+        if ($includeLevelName) {
+            $logMessage = '(' . $levelName . ') ' . $formattedMessage;
+        } else {
+            $logMessage = $formattedMessage;
+        }
+
+        // call it
+        if ($method != 'error') {
+            WP_CLI::$method($logMessage);
+        } else {
+            WP_CLI::$method($logMessage, $exit);
         }
     }
 
     /**
-     * {@inheritdoc}
+     * Sanity check a logger map.
+     *
+     * Checks to make sure the logger map contains a supported log level and has an existing method in WP_CLI.
+     *
+     * @param array $map The logger map to be checked.
+     * @param int $level The level to be checked.
+     * @param string $levelName The name of the level for error reporting.
+     *
+     * @throws \InvalidArgumentException
      */
-    public function isHandling(array $record)
+    public static function validateLoggerMap(array $map, int $level, string $levelName = '')
     {
-        // bodge for debug level as needs to always call that;
-        // WP_CLI deals with --debug command argument
-        $level = (int) $record['level'];
-        if ($level == Logger::DEBUG) {
-            return true;
+        $entry = isset($map[(string)$level]) ? $map[(string)$level] : array();
+        if (empty($entry)) {
+            throw new \InvalidArgumentException(
+                'Logger map has no entry for level ' . $levelName . '(' . $level . ')'
+            );
+        } else {
+            if (!method_exists('WP_CLI', $entry['method'])) {
+                throw new \InvalidArgumentException(
+                    'Logger map contains an invalid method for level ' . $levelName . '(' . $level . ')'
+                );
+            } else {
+                if (isset($entry['exit'])) {
+                    if ($entry['method'] !== 'error' && $entry['exit'] === true) {
+                        throw new \InvalidArgumentException(
+                            'Logger map for level ' . $levelName . '(' . $level . ') specifies exit but
+                         exit is only valid for \'error\' method'
+                        );
+                    }
+                }
+            }
         }
+    }
 
-        // check level is one we know how to handle as more could be added in the future
-        // that would need mapping to the WP-CLI:: method.
-        $supported    = array(
-            Logger::DEBUG,
-            Logger::INFO,
-            Logger::NOTICE,
-            Logger::WARNING,
-            Logger::ERROR,
-            Logger::CRITICAL,
-            Logger::ALERT,
-            Logger::EMERGENCY
-        );
-        $is_supported = in_array($level, $supported, true);
-
-        return $is_supported && parent::isHandling($record);
+    /***
+     * Returns an array of default mappings to map Logger methods to WP-CLI methods.
+     *
+     * @return array
+     */
+    public static function getDefaultLoggerMap()
+    {
+        return [
+            Logger::DEBUG => [
+                'method' => 'debug',
+            ],
+            Logger::INFO => [
+                'method' => 'log',
+            ],
+            Logger::NOTICE => [
+                'method' => 'warning',
+                'includeLevelName' => true,
+            ],
+            Logger::WARNING => [
+                'method' => 'warning',
+                'includeLevelName' => true,
+            ],
+            Logger::ERROR => [
+                'method' => 'error',
+                'includeLevelName' => true,
+                'exit' => false,
+            ],
+            Logger::CRITICAL => [
+                'method' => 'error',
+                'includeLevelName' => true,
+                'exit' => true,
+            ],
+            Logger::ALERT => [
+                'method' => 'error',
+                'includeLevelName' => true,
+                'exit' => true,
+            ],
+            Logger::EMERGENCY => [
+                'method' => 'error',
+                'includeLevelName' => true,
+                'exit' => true,
+            ]
+        ];
     }
 
     /**
@@ -150,9 +214,9 @@ class WPCLIHandler extends AbstractProcessingHandler
     protected function getDefaultFormatter()
     {
         if ($this->verbose) {
-            return new LineFormatter(self::WPCLI_FORMAT_VERBOSE);
+            return new LineFormatter(self::WP_CLI_FORMAT_VERBOSE);
         } else {
-            return new LineFormatter(self::WPCLI_FORMAT_STANDARD);
+            return new LineFormatter(self::WP_CLI_FORMAT_STANDARD);
         }
     }
 }
