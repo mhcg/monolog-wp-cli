@@ -294,7 +294,47 @@ class WPCLIHandlerTest extends TestCase
 
     //</editor-fold>
 
-    //<editor-fold desc="IsHandling Tests">
+    //<editor-fold desc="Handling and Supported Tests">
+    /**
+     * Tests to make sure all of the default supported levels are actually showing as supported
+     *
+     * @covers \MHCG\Monolog\Handler\WPCLIHandler::getSupportedLevels
+     */
+    public function testSupportedDefault()
+    {
+        $defaultMap = WPCLIHandler::getDefaultLoggerMap();
+        $supported = WPCLIHandler::getSupportedLevels($defaultMap);
+
+        $this->assertTrue(count($defaultMap) > 0);
+        $this->assertTrue(count($supported) > 0);
+
+        $countOfMap = count(array_keys($defaultMap));
+        $this->assertCount($countOfMap, $supported);
+        $this->assertEquals(array_keys($defaultMap), $supported);
+    }
+
+    /**
+     * Tests to make sure the getSupportedLevels methods correctly ignores invalid map entries
+     *
+     * @covers \MHCG\Monolog\Handler\WPCLIHandler::getSupportedLevels
+     */
+    public function testSupportedDoesNotIncludeInvalid()
+    {
+        $map = [
+            999999 => [
+                'method' => 'method_does_not_exist'
+            ],
+            Logger::DEBUG => [
+                'method' => 'debug',
+            ]
+        ];
+
+        $supported = WPCLIHandler::getSupportedLevels($map);
+        $this->assertCount(2, $map);
+        $this->assertCount(1, $supported);
+        $this->assertEquals($supported[0], Logger::DEBUG);
+    }
+
     /**
      * Tests isHandling of WPCLIHandler returns false for an unsupported logging level.
      *

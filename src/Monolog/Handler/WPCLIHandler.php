@@ -35,7 +35,11 @@ class WPCLIHandler extends AbstractProcessingHandler
     /** @var string Format used when WP_DEBUG enabled */
     const WP_CLI_FORMAT_VERBOSE = "%message% %context% %extra%";
 
+    /** @var bool Use verbose style log message format */
     private $verbose = false;
+
+    /** @var array Logger map to use for mapping Logger methods to WP-CLI methods */
+    private $loggerMap;
 
     /**
      * WPCLIHandler constructor.
@@ -71,19 +75,33 @@ class WPCLIHandler extends AbstractProcessingHandler
 
         // check level is one we know how to handle as more could be added in the future
         // that would need mapping to the WP-CLI:: method.
-        $supported = array(
-            Logger::DEBUG,
-            Logger::INFO,
-            Logger::NOTICE,
-            Logger::WARNING,
-            Logger::ERROR,
-            Logger::CRITICAL,
-            Logger::ALERT,
-            Logger::EMERGENCY
-        );
+        $supported = self::getSupportedLevels($this->getLoggerMap());
         $isSupported = in_array($level, $supported, true);
 
         return $isSupported && parent::isHandling($record);
+    }
+
+    /**
+     * Returns a list of supported Logger levels based on the supplied logger map.
+     *
+     * @param array $map Logger map containing mappings.
+     *
+     * @return array Array of supported Logger levels.
+     */
+    public static function getSupportedLevels(array $map)
+    {
+        $results = [];
+        // validate the supplied map and return only the valid levels
+        $levels = array_keys($map);
+        foreach ($levels as $level) {
+            try {
+                self::validateLoggerMap($map, $level, Logger::getLevelName($level));
+                $results[] = $level;
+            } catch (\Exception $e) {
+                // do nothing
+            }
+        }
+        return $results;
     }
 
     /**
@@ -105,7 +123,7 @@ class WPCLIHandler extends AbstractProcessingHandler
         $formattedMessage = $this->getFormatter()->format($record);
 
         // build up details of calling method
-        $loggerMap = self::getDefaultLoggerMap();
+        $loggerMap = $this->getLoggerMap();
         self::validateLoggerMap($loggerMap, $level, $levelName);
 
         $method = $loggerMap[$level]['method'];
@@ -145,22 +163,32 @@ class WPCLIHandler extends AbstractProcessingHandler
             throw new \InvalidArgumentException(
                 'Logger map has no entry for level ' . $levelName . '(' . $level . ')'
             );
-        } else {
-            if (!method_exists('WP_CLI', $entry['method'])) {
-                throw new \InvalidArgumentException(
-                    'Logger map contains an invalid method for level ' . $levelName . '(' . $level . ')'
-                );
-            } else {
-                if (isset($entry['exit'])) {
-                    if ($entry['method'] !== 'error' && $entry['exit'] === true) {
-                        throw new \InvalidArgumentException(
-                            'Logger map for level ' . $levelName . '(' . $level . ') specifies exit but
-                         exit is only valid for \'error\' method'
-                        );
-                    }
-                }
-            }
         }
+        if (!method_exists('WP_CLI', $entry['method'])) {
+            throw new \InvalidArgumentException(
+                'Logger map contains an invalid method for level ' . $levelName . '(' . $level . ')'
+            );
+        }
+        if ($entry['method'] !== 'error' && isset($entry['exit']) && $entry['exit'] === true) {
+            throw new \InvalidArgumentException(
+                'Logger map for level ' . $levelName . '(' . $level . ') specifies exit but
+                         exit is only valid for \'error\' method'
+            );
+        }
+    }
+
+    /**
+     * Returns the Logger map.
+     *
+     * @return array Logger map/
+     */
+    protected function getLoggerMap()
+    {
+        if (!$this->loggerMap) {
+            $this->loggerMap = self::getDefaultLoggerMap();
+        }
+
+        return $this->loggerMap;
     }
 
     /***
