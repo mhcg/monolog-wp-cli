@@ -1,6 +1,6 @@
 {
   "name": "mhcg/monolog-wp-cli",
-  "description": "Monolog handler to support WP-CLI calls",
+  "description": "Extension for Monolog to support outputting to WP-CLI (The WordPress command line interface) when running wp command lines.",
   "keywords": [
     "log",
     "logging",
