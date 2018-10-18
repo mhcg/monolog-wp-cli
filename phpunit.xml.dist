@@ -1,21 +1,16 @@
-<phpunit 	bootstrap="vendor/autoload.php"			
-			colors="true"
-			convertErrorsToExceptions="true"
-			convertNoticesToExceptions="true"
-			convertWarningsToExceptions="true"
-			stopOnFailure="true">
-			<testsuites>
-				<testsuite name="Unit Tests">
-					<directory>tests</directory>
-				</testsuite>
-			</testsuites>
-			<filter>
-				<whitelist processUncoveredFilesFromWhitelist="true">
-					<directory suffix=".php">./src</directory>
-					<exclude>./vendor</exclude>
-				</whitelist>
-			</filter>
-			<php>
-				<ini name="date.timezone" value="UTC"/>
-			</php>
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="vendor/autoload.php" colors="true" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" stopOnFailure="true">
+   <testsuites>
+      <testsuite name="Unit Tests">
+         <directory>tests</directory>
+      </testsuite>
+   </testsuites>
+   <filter>
+      <whitelist processUncoveredFilesFromWhitelist="true">
+         <directory suffix=".php">src</directory>
+      </whitelist>
+   </filter>
+   <php>
+      <ini name="date.timezone" value="UTC" />
+   </php>
 </phpunit>

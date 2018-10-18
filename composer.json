@@ -21,7 +21,7 @@
     "monolog/monolog": "~1"
   },
   "require-dev": {
-    "phpunit/phpunit": "^6.5",
+    "phpunit/phpunit": "^7",
     "php-coveralls/php-coveralls": "^2.1",
     "wp-cli/wp-cli": "^2.0"
   },
@@ -37,6 +37,6 @@
   },
   "scripts": {
     "tests": "composer unittest",
-    "unittest": "phpunit"
+    "unittest": "vendor/bin/phpunit"
   }
 }
