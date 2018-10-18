@@ -27,6 +27,8 @@ before_script:
 script:
   - mkdir -p build/logs
   - "phpunit --coverage-clover build/logs/clover.xml"
+  - echo $XDEBUG_ENABLED
+  - echo $TRAVIS_PULL_REQUEST
   - if [ "$XDEBUG_ENABLED" == "1" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT; fi
 
 after_success:
