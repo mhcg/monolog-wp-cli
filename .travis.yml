@@ -2,7 +2,7 @@ env:
   global:
   - CC_TEST_REPORTER_ID=200e7e42ced51e3e2ed148ef5e5ef42aa71423b1a147728b74a36503535aa526
   - GIT_COMMITTED_AT=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then git log -1 --pretty=format:%ct; else git log -1 --skip 1 --pretty=format:%ct; fi)
-  - XDEBUG_ENABLED=$(if [[ "$(php --version | grep -cim1 xdebug)" -ge 1 ]]; then echo true; else echo false; fi)
+  - XDEBUG_ENABLED=$(if [ "$(php --version | grep -cim1 xdebug)" -ge 1 ]; then echo true; else echo false; fi)
 
 language: php
 
