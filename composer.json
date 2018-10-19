@@ -33,5 +33,10 @@
     "psr-4": {
       "MHCGDev\\Monolog\\": "tests/Monolog"
     }
+  },
+  "support": {
+    "issues": "https://github.com/mhcg/monolog-wp-cli/issues",
+    "wiki": "https://github.com/mhcg/monolog-wp-cli/wiki",
+    "source": "https://github.com/mhcg/monolog-wp-cli"
   }
 }
