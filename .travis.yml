@@ -8,10 +8,9 @@ language: php
 sudo: false
 
 php:
-  - 7.1
   - 7.2
   - 7.3
-  - nightly
+  - 7.4
 
 cache:
   directories:
@@ -25,8 +24,5 @@ before_script:
 
 script:
   - mkdir -p build/logs
-  - "phpunit --coverage-clover build/logs/clover.xml"
-  - if [ -f build/logs/clover.xml ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT; fi
-
-after_success:
-  - travis_retry php vendor/bin/php-coveralls
+  - "phpunit --coverage-text --coverage-clover build/logs/clover.xml"
+  - if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT; fi
