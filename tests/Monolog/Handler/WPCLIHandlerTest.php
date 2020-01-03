@@ -22,7 +22,7 @@ class WPCLIHandlerTest extends TestCase
     /** @var string Constant for bodging sanity check */
     const RUNNING_IN_TEST = 'RunningInTest_RunningInTest';
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -42,7 +42,7 @@ class WPCLIHandlerTest extends TestCase
      *
      * Basically it's around checking if running in WP-CLI or not as unit tests should not be ran in there.
      */
-    private function sanityCheck()
+    private function sanityCheck(): void
     {
         $message = 'Unit tests should not be ran from within WP-CLI environment';
         if (defined('WP_CLI')) {
@@ -55,7 +55,7 @@ class WPCLIHandlerTest extends TestCase
     /**
      * Will need to pretend to be running under WP-CLI for most tests.
      */
-    private function pretendToBeInWPCLI()
+    private function pretendToBeInWPCLI(): void
     {
         defined('WP_CLI') || define('WP_CLI', self::RUNNING_IN_TEST);
     }
@@ -65,7 +65,7 @@ class WPCLIHandlerTest extends TestCase
      *
      * @return WPCLIHandler
      */
-    private static function getHandleObjectForStandardTest()
+    private static function getHandleObjectForStandardTest(): WPCLIHandler
     {
         return new WPCLIHandler(Logger::DEBUG);
     }
@@ -75,7 +75,7 @@ class WPCLIHandlerTest extends TestCase
      *
      * @return Logger
      */
-    private static function getLoggerObjectForStandardTest()
+    private static function getLoggerObjectForStandardTest(): Logger
     {
         return new Logger(self::RUNNING_IN_TEST);
     }
@@ -86,7 +86,7 @@ class WPCLIHandlerTest extends TestCase
      * @param int $level
      * @return array
      */
-    private static function getLoggerRecordArrayWithLevel(int $level = Logger::DEBUG)
+    private static function getLoggerRecordArrayWithLevel(int $level = Logger::DEBUG): array
     {
         $array = array(
             'level' => $level
