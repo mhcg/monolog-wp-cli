@@ -94,6 +94,21 @@ class WPCLIHandlerTest extends TestCase
         return $array;
     }
 
+    /**
+     * Provides backward compatiblity with PHPUnit 8.
+     *
+     * Deprecated Use expectExceptionMessageMatches() instead.
+     */
+    public function expectExceptionMessageRegExp(string $regularExpression): void
+    {
+        $version = \PHPUnit\Runner\Version::series();
+        if ($version !== "8.5") {
+            parent::expectExceptionMessageMatches($regularExpression);
+        } else {
+            parent::expectExceptionMessageRegExp($regularExpression);
+        }
+    }
+
     //</editor-fold>
 
     //<editor-fold desc="Constructor Tests">
@@ -345,7 +360,7 @@ class WPCLIHandlerTest extends TestCase
         $this->sanityCheck();
 
         $this->pretendToBeInWPCLI();
-        $handler = self::getLoggerObjectForStandardTest();
+        $handler = self::getHandleObjectForStandardTest();
         $this->assertFalse($handler->isHandling(self::getLoggerRecordArrayWithLevel(999)));
     }
 

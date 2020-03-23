@@ -18,9 +18,10 @@
 
 namespace MHCG\Monolog\Handler;
 
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Formatter\FormatterInterface;
+use Monolog\Handler\AbstractProcessingHandler;
 use WP_CLI;
 
 /**
@@ -64,7 +65,7 @@ class WPCLIHandler extends AbstractProcessingHandler
     /**
      * {@inheritdoc}
      */
-    public function isHandling(array $record)
+    public function isHandling(array $record): bool
     {
         // bodge for debug level as needs to always call that;
         // WP_CLI deals with --debug command argument
@@ -115,7 +116,7 @@ class WPCLIHandler extends AbstractProcessingHandler
      * @throws \RuntimeException If a level is passed that is not currently mapped to a WP_CLI:: method.
      * @throws \InvalidArgumentException if something in $record is invalid.
      */
-    protected function write(array $record)
+    protected function write(array $record): void
     {
         // init vars for whatever being used
         $level = (int)$record['level']; // no default as think it would be an error to be empty
@@ -239,7 +240,7 @@ class WPCLIHandler extends AbstractProcessingHandler
     /**
      * {@inheritdoc}
      */
-    protected function getDefaultFormatter()
+    protected function getDefaultFormatter(): FormatterInterface
     {
         if ($this->verbose) {
             return new LineFormatter(self::WP_CLI_FORMAT_VERBOSE);
