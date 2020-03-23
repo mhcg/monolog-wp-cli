@@ -101,8 +101,8 @@ class WPCLIHandlerTest extends TestCase
      */
     public function expectExceptionMessageRegExp(string $regularExpression): void
     {
-        $version = \PHPUnit\Runner\Version::series();
-        if ($version !== "8.5") {
+        $version = \PHPUnit\Runner\Version::id();
+        if (version_compare($version, '9.0.0', '>=')) {
             parent::expectExceptionMessageMatches($regularExpression);
         } else {
             parent::expectExceptionMessageRegExp($regularExpression);
