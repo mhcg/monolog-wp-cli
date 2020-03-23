@@ -1,4 +1,5 @@
 {
     "composer.executablePath": "/usr/local/bin/composer",
+    "phpcs.executablePath": "vendor/bin/phpcs",
     "phpcs.standard": "PSR2"
 }
