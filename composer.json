@@ -35,6 +35,11 @@
       "MHCGDev\\Monolog\\": "tests/Monolog"
     }
   },
+  {
+    "scripts": {
+      "test": "vendor/bin/phpunit"
+    }
+  },
   "support": {
     "issues": "https://github.com/mhcg/monolog-wp-cli/issues",
     "wiki": "https://github.com/mhcg/monolog-wp-cli/wiki",
