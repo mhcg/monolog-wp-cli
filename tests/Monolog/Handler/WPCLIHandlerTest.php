@@ -94,21 +94,6 @@ class WPCLIHandlerTest extends TestCase
         return $array;
     }
 
-    /**
-     * Provides backward compatiblity with PHPUnit 8.
-     *
-     * Deprecated Use expectExceptionMessageMatches() instead.
-     */
-    public function expectExceptionMessageRegExp(string $regularExpression): void
-    {
-        $version = \PHPUnit\Runner\Version::id();
-        if (version_compare($version, '9.0.0', '>=')) {
-            parent::expectExceptionMessageMatches($regularExpression);
-        } else {
-            parent::expectExceptionMessageRegExp($regularExpression);
-        }
-    }
-
     //</editor-fold>
 
     //<editor-fold desc="Constructor Tests">
@@ -232,7 +217,7 @@ class WPCLIHandlerTest extends TestCase
     public function testValidateLoggerMapInvalidLevel()
     {
         $defaultMap = WPCLIHandler::getDefaultLoggerMap();
-        $this->expectExceptionMessageRegExp('/has no entry for level/');
+        $this->expectExceptionMessageMatches('/has no entry for level/');
         WPCLIHandler::validateLoggerMap($defaultMap, 999999, 'Whatever');
     }
 
@@ -246,7 +231,7 @@ class WPCLIHandlerTest extends TestCase
                 'method' => 'method_does_not_exist'
             ]
         ];
-        $this->expectExceptionMessageRegExp('/invalid method/');
+        $this->expectExceptionMessageMatches('/invalid method/');
         WPCLIHandler::validateLoggerMap($map, 999999, 'Whatever');
     }
 
@@ -261,7 +246,7 @@ class WPCLIHandlerTest extends TestCase
                 'exit' => true
             ]
         ];
-        $this->expectExceptionMessageRegExp('/specifies exit/');
+        $this->expectExceptionMessageMatches('/specifies exit/');
         WPCLIHandler::validateLoggerMap(
             $map,
             Logger::DEBUG,
