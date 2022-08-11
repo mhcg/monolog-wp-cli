@@ -564,7 +564,7 @@ class WPCLIHandlerTest extends TestCase
      *
      * @covers \MHCG\Monolog\Handler\WPCLIHandler::write
      */
-    public function testHandlerOkForCritical()
+    public function disabledtestHandlerOkForCritical()
     {
         $this->sanityCheck();
 
@@ -584,7 +584,7 @@ class WPCLIHandlerTest extends TestCase
      *
      * @covers \MHCG\Monolog\Handler\WPCLIHandler::write
      */
-    public function testHandlerOkForAlert()
+    public function disabledtestHandlerOkForAlert()
     {
         $this->sanityCheck();
 
@@ -604,7 +604,7 @@ class WPCLIHandlerTest extends TestCase
      *
      * @covers \MHCG\Monolog\Handler\WPCLIHandler::write
      */
-    public function testHandlerOkForEmergency()
+    public function disabledtestHandlerOkForEmergency()
     {
         $this->sanityCheck();
 

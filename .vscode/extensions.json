@@ -1,8 +1,6 @@
 {
     "recommendations": [
         "xdebug.php-pack",
-        "ikappas.composer",
-        "ikappas.phpcs",
         "recca0120.vscode-phpunit"
     ]
 }
