@@ -23,10 +23,7 @@
 
 	// Add the IDs of extensions you want installed when the container is created in the array below.
 	"extensions": [
-		"felixfbecker.php-debug",
-		"felixfbecker.php-intellisense",
-		"ikappas.composer",
-		"ikappas.phpcs",
+		"xdebug.php-pack",
 		"recca0120.vscode-phpunit"
 	]
 }
