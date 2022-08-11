@@ -15,6 +15,8 @@ use Monolog\Logger;
  *
  * @covers MHCG\Monolog\Handler\WPCLIHandler
  *
+ * @SuppressWarnings(PHPMD.TooManyPublicMethods)
+ *
  * @package MHCGDev\Monolog\Handler
  */
 class WPCLIHandlerTest extends TestCase
