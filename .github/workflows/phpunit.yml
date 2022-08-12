@@ -1,4 +1,4 @@
-name: PHP Build, Test and Coverage
+name: PHP Build, Test (Multi-platform)
 
 on:
   push:
@@ -11,8 +11,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        php-version: ['7.4']
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        php-version: ['7.3', '7.4']
 
     name: PHP ${{ matrix.php-version }} on ${{ matrix.os }}
 
@@ -26,20 +26,9 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           tools: composer, phpunit
-          extensions: pcov
-          coverage: pcov
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup problem matchers for PHP
-        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
-    
-      - name: Setup problem matchers for PHPUnit
-        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
-
-      - name: Validate composer.json and composer.lock
-        run: composer validate
-        
       - name: Cache dependencies
         uses: actions/cache@v2
         with:
@@ -51,4 +40,4 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-suggest
     
       - name: Run test suite
-        run: phpunit --coverage-text
+        run: phpunit
