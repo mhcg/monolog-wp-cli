@@ -1,29 +1,49 @@
-// For format details, see https://aka.ms/vscode-remote/devcontainer.json or the definition README at
-// https://github.com/microsoft/vscode-dev-containers/tree/master/containers/php-7
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.195.0/containers/php
 {
 	"name": "Monolog-WP-CLI",
-	"dockerFile": "Dockerfile",
-	// Use 'settings' to set *default* container specific settings.json values on container create. 
-	// You can edit these settings after create using File > Preferences > Settings > Remote.
-	"settings": { 
-		"terminal.integrated.shell.linux": "/bin/bash"
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": {
+			// Update VARIANT to pick a PHP version: 8, 8.0, 7, 7.4, 7.3
+			// Append -bullseye or -buster to pin to an OS version.
+			// Use -bullseye variants on local on arm64/Apple Silicon.
+			"VARIANT": "7.3",
+			"NODE_VERSION": "none"
+		}
 	},
-		
-	// Use 'appPort' to create a container with published ports. If the port isn't working, be sure
-	// your server accepts connections from all interfaces (0.0.0.0 or '*'), not just localhost.
-	// "appPort": [],
-
-	// Uncomment the next line to run commands after the container is created.
-	// "postCreateCommand": "php -v",
-
-	// Uncomment the next line to have VS Code connect as an existing non-root user in the container. 
-	// On Linux, by default, the container user's UID/GID will be updated to match your local user. See
-	// https://aka.ms/vscode-remote/containers/non-root for details on adding a non-root user if none exist.
-	"remoteUser": "vscode",
-
-	// Add the IDs of extensions you want installed when the container is created in the array below.
-	"extensions": [
-		"xdebug.php-pack",
-		"recca0120.vscode-phpunit"
-	]
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			// Set *default* container specific settings.json values on container create.
+			"settings": {
+				"php.validate.executablePath": "/usr/local/bin/php"
+			},
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"xdebug.php-debug",
+				"bmewburn.vscode-intelephense-client",
+				"ikappas.composer",
+				"recca0120.vscode-phpunit"
+			]
+		}
+	},
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [8080],
+	// Use 'portsAttributes' to set default properties for specific forwarded ports. More info: https://code.visualstudio.com/docs/remote/devcontainerjson-reference.
+	// "portsAttributes": {
+	// 	"8000": {
+	// 		"label": "Hello Remote World",
+	// 		"onAutoForward": "notify"
+	// 	}
+	// },
+	// Use 'otherPortsAttributes' to configure any ports that aren't configured using 'portsAttributes'.
+	// "otherPortsAttributes": {
+	// 		"onAutoForward": "silent"
+	// },
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "sudo chmod a+x \"$(pwd)\" && sudo rm -rf /var/www/html && sudo ln -s \"$(pwd)\" /var/www/html"
+	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "vscode"
 }
